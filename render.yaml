@@ -1,0 +1,11 @@
+# Render 無料枠用。GitHubリポジトリを連携 → このファイルで自動構成。
+# 1サービス（FastAPI）でバックエンドとiPhone専用フロントを同時配信する。
+services:
+  - type: web
+    name: semicon-scope
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
