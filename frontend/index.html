@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SEMICON">
+<meta name="theme-color" content="#0a0e14">
+<link rel="manifest" href="manifest.json">
+<title>SEMICON SCOPE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
+  :root{
+    --bg:#0a0e14;--panel:#0f1620;--panel2:#131c28;--line:#1e2a3a;--txt:#d7e0ec;--dim:#6b7d93;
+    --dimmer:#3f4f63;--up:#23d18b;--down:#ff5d6c;--warn:#ffb454;--accent:#46b1ff;--ipo:#c792ea;
+    --mono:'JetBrains Mono',monospace;--jp:'Zen Kaku Gothic New',sans-serif;
+    --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom);
+    --tabh:calc(58px + var(--sab));
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{overscroll-behavior-y:none}
+  body{background:var(--bg);color:var(--txt);font-family:var(--jp);font-size:15px;
+    -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
+    background-image:radial-gradient(circle at 50% -5%,rgba(70,177,255,.07),transparent 45%);}
+  .mono{font-family:var(--mono)}
+  #root{min-height:100vh;min-height:100dvh}
+  .head{position:sticky;top:0;z-index:20;background:rgba(10,14,20,.85);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);
+    padding:calc(var(--sat) + 8px) 16px 8px;}
+  .head .row1{display:flex;align-items:center;gap:10px}
+  .brand{font-family:var(--mono);font-weight:800;font-size:17px;letter-spacing:.5px;color:#fff}
+  .brand b{color:var(--accent)}
+  .conn{margin-left:auto;font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700}
+  .conn.ok{color:var(--up);background:rgba(35,209,139,.12)}
+  .conn.ng{color:var(--down);background:rgba(255,93,108,.12)}
+  .conn.wait{color:var(--warn);background:rgba(255,180,84,.12)}
+  .head .row2{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--dim);flex-wrap:wrap}
+  .delaybadge{background:rgba(255,180,84,.12);border:1px solid rgba(255,180,84,.35);color:var(--warn);
+    padding:3px 9px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .pulse{width:6px;height:6px;border-radius:50%;background:var(--warn);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .counter{color:var(--accent)}
+  .scroll{padding:12px 12px calc(var(--tabh) + 70px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .search{position:relative;margin-bottom:10px}
+  .search input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:12px 14px 12px 38px;border-radius:12px;font-family:var(--mono);font-size:15px;outline:none}
+  .search input:focus{border-color:var(--accent)}
+  .search::before{content:'\2315';position:absolute;left:13px;top:9px;color:var(--dim);font-size:19px}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;background:var(--panel2);border:1px solid var(--line);color:var(--dim);
+    padding:8px 14px;border-radius:20px;font-size:13px;font-weight:500;transition:.15s;white-space:nowrap}
+  .chip.on{background:rgba(70,177,255,.15);border-color:var(--accent);color:var(--accent)}
+  .chip:active{transform:scale(.95)}
+  .astrip{display:flex;gap:8px;overflow-x:auto;margin:10px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .astrip::-webkit-scrollbar{display:none}
+  .alert{flex-shrink:0;padding:7px 12px;border-radius:10px;font-size:12px;font-family:var(--mono);font-weight:700}
+  .alert.surge{background:rgba(35,209,139,.1);border:1px solid rgba(35,209,139,.35);color:var(--up)}
+  .alert.plunge{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.35);color:var(--down)}
+  .alert.volume{background:rgba(70,177,255,.1);border:1px solid rgba(70,177,255,.35);color:var(--accent)}
+  .alert.disclosure{background:rgba(199,146,234,.1);border:1px solid rgba(199,146,234,.4);color:var(--ipo)}
+  .alert.none{color:var(--dimmer);font-family:var(--jp);border:1px solid var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;
+    display:flex;align-items:center;gap:12px;transition:transform .1s,background .12s}
+  .card:active{transform:scale(.985);background:var(--panel2)}
+  .card .left{flex:1;min-width:0}
+  .card .nm{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .card .cd{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700}
+  .card .meta{font-size:11px;color:var(--dim);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .card .right{text-align:right;flex-shrink:0}
+  .card .px{font-family:var(--mono);font-size:18px;font-weight:800}
+  .card .ch{font-family:var(--mono);font-size:13px;font-weight:700;margin-top:2px}
+  .up{color:var(--up)}.down{color:var(--down)}.na{color:var(--dimmer)}
+  .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+  .tag.ai{color:#7ee787;border-color:rgba(126,231,135,.3)}
+  .tag.car{color:#79c0ff;border-color:rgba(121,192,255,.3)}
+  .tag.pow{color:#ffa657;border-color:rgba(255,166,87,.3)}
+  .ipo{background:linear-gradient(90deg,var(--ipo),#a36fd6);color:#1a0f2e;font-family:var(--mono);
+    font-weight:800;font-size:9px;padding:2px 6px;border-radius:5px;letter-spacing:.4px}
+  .spark{width:54px;height:30px;flex-shrink:0}
+  .empty{text-align:center;color:var(--dimmer);font-size:13px;padding:40px 0}
+  .banner{background:rgba(255,180,84,.1);border:1px solid rgba(255,180,84,.3);color:var(--warn);
+    font-size:12px;line-height:1.6;padding:12px 14px;border-radius:12px;margin-bottom:12px}
+  .banner b{display:block;margin-bottom:4px}
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:.25s}
+  .ov.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--panel);
+    border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+    max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+    padding-bottom:calc(var(--sab) + 20px)}
+  .sheet.on{transform:translateY(0)}
+  .grab{width:38px;height:4px;background:var(--dimmer);border-radius:3px;margin:10px auto 4px}
+  .shead{padding:6px 18px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+  .shead .x{position:absolute;top:10px;right:16px;width:30px;height:30px;border-radius:50%;
+    background:var(--panel2);color:var(--dim);font-size:16px;display:flex;align-items:center;justify-content:center}
+  .sprice{font-family:var(--mono);font-size:30px;font-weight:800;margin-top:6px}
+  .smeta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .sbody{padding:16px 18px}.sec{margin-bottom:22px}
+  .sec h4{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1.2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .metric{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .metric .k{font-size:11px;color:var(--dim)} .metric .v{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:3px}
+  .chart{height:130px;width:100%}
+  .lnk{display:block;padding:11px 12px;border-radius:10px;text-decoration:none;color:var(--txt);font-size:13px;
+    border:1px solid var(--line);margin-bottom:7px;line-height:1.4;background:var(--panel2)}
+  .lnk:active{background:var(--line)}
+  .lnk .t{font-family:var(--mono);font-size:10px;color:var(--dim);margin-right:8px}
+  .src{font-family:var(--mono);font-size:9px;color:var(--accent);border:1px solid var(--line);padding:1px 5px;border-radius:4px;margin-left:6px}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(10,14,20,.9);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+    display:flex;padding:8px 0 calc(var(--sab));height:var(--tabh)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--dim);font-size:10px;font-weight:600}
+  .tab.on{color:var(--accent)}
+  .tab .ic{font-size:20px;line-height:1}
+  .tab:active{opacity:.6}
+  .disc{position:fixed;left:0;right:0;bottom:var(--tabh);z-index:25;background:#080b10;
+    border-top:1px solid var(--line);padding:5px 14px;font-family:var(--mono);font-size:8.5px;
+    color:var(--dimmer);text-align:center;line-height:1.4}
+  .disc b{color:var(--down)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+const qp=new URLSearchParams(location.search).get('api');
+if(qp)localStorage.setItem('SEMICON_API',qp);
+const API=localStorage.getItem('SEMICON_API')||'';
+const THEME_LBL={ai:'生成AI',car:'車載',pow:'パワー半導体'};
+const CATS=['all','ipo','製造装置','材料','設計','検査','パワー半導体','後工程'];
+const CAT_LBL={all:'すべて',ipo:'IPO'};
+const POLL_MS=30000;
+const fmt=n=>n==null?'—':Number(n).toLocaleString('ja-JP');
+const tstr=iso=>{if(!iso)return'--:--:--';return new Date(iso).toLocaleTimeString('ja-JP',{hour12:false});};
+
+function MiniSpark({pts,cls}){
+  if(!pts||pts.length<2)return <svg className="spark"/>;
+  const w=54,h=30,p=2,mn=Math.min(...pts),mx=Math.max(...pts);
+  const col=cls==='up'?'#23d18b':'#ff5d6c';
+  const x=i=>p+i*(w-2*p)/(pts.length-1),y=v=>h-p-(v-mn)/((mx-mn)||1)*(h-2*p);
+  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  return <svg className="spark" viewBox={`0 0 ${w} ${h}`}><path d={d} fill="none" stroke={col} strokeWidth="1.5"/></svg>;
+}
+function BigSpark({pts,cls}){
+  if(!pts||pts.length<2)return <div className="empty" style={{padding:20}}>チャートデータなし</div>;
+  const w=500,h=130,p=8,mn=Math.min(...pts),mx=Math.max(...pts);
+  const col=cls==='up'?'#23d18b':'#ff5d6c';
+  const x=i=>p+i*(w-2*p)/(pts.length-1),y=v=>h-p-(v-mn)/((mx-mn)||1)*(h-2*p);
+  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  const area=d+` L${x(pts.length-1)} ${h} L${x(0)} ${h} Z`;
+  return <svg className="chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <defs><linearGradient id="gg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor={col} stopOpacity=".25"/><stop offset="1" stopColor={col} stopOpacity="0"/></linearGradient></defs>
+    <path d={area} fill="url(#gg)"/><path d={d} fill="none" stroke={col} strokeWidth="1.8"/></svg>;
+}
+
+function Sheet({code,onClose}){
+  const [d,setD]=useState(null);
+  useEffect(()=>{if(!code){setD(null);return;}setD(null);
+    fetch(`${API}/api/stocks/${code}`).then(r=>r.json()).then(setD).catch(()=>setD({error:true}));
+  },[code]);
+  const cls=d&&d.change_pct>=0?'up':'down',sign=d&&d.change_pct>=0?'+':'';
+  return <>
+    <div className={"ov"+(code?' on':'')} onClick={onClose}/>
+    <div className={"sheet"+(code?' on':'')}>
+      <div className="grab"/>
+      {!code?null:!d?<div className="sbody"><div className="empty">読み込み中…</div></div>:
+       d.error?<div className="sbody"><div className="empty">取得に失敗しました</div></div>:<>
+        <div className="shead">
+          <div className="x" onClick={onClose}>✕</div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}><span className="cd mono" style={{fontSize:13,color:'var(--accent)',fontWeight:700}}>{d.code}</span>{d.ipo&&<span className="ipo">NEW IPO</span>}</div>
+          <div style={{fontSize:18,fontWeight:700,marginTop:3}}>{d.name}</div>
+          <div className={"sprice "+cls}>{d.price?`¥${fmt(d.price)}`:'—'} <span style={{fontSize:15}}>{d.change_pct!=null?`${sign}${d.change_pct}%`:''}</span></div>
+          <div className="smeta"><span className="pulse"></span>15分遅延 · 取得 {tstr(d.fetched_at)} · {d.sub}
+            {d.themes.map(t=><span key={t} className={"tag "+t}>{THEME_LBL[t]}</span>)}</div>
+        </div>
+        <div className="sbody">
+          <div className="sec"><h4>PRICE CHART · 直近30日</h4><BigSpark pts={d.history} cls={cls}/></div>
+          <div className="sec"><h4>METRICS · 指標</h4><div className="grid">
+            <div className="metric"><div className="k">出来高</div><div className="v">{d.volume?(d.volume/1e6).toFixed(1)+'M':'—'}</div></div>
+            <div className="metric"><div className="k">PER</div><div className="v">{d.per??'—'}</div></div>
+            <div className="metric"><div className="k">時価総額</div><div className="v" style={{fontSize:14}}>{d.market_cap?(d.market_cap/1e8).toFixed(0)+'億円':'—'}</div></div>
+            <div className="metric"><div className="k">配当利回り</div><div className="v" style={{fontSize:14}}>{d.dividend_yield?d.dividend_yield+'%':'—'}</div></div>
+          </div></div>
+          <div className="sec"><h4>DISCLOSURE · 開示(EDINET)</h4>
+            {d.disclosures&&d.disclosures.length?d.disclosures.map((x,i)=>
+              <a key={i} className="lnk" href="#" onClick={e=>e.preventDefault()}><span className="t">{x.date}</span>{x.doc_type||'開示書類'}<span className="src">EDINET</span></a>)
+            :<div className="empty" style={{padding:14}}>直近の開示なし</div>}</div>
+          <div className="sec"><h4>NEWS · 見出し(RSS)</h4>
+            {d.news&&d.news.length?d.news.map((x,i)=>
+              <a key={i} className="lnk" href={x.link} target="_blank" rel="noopener"><span className="t">{x.source}</span>{x.title}<span className="src">RSS</span></a>)
+            :<div className="empty" style={{padding:14}}>ニュースなし</div>}</div>
+          <p style={{fontSize:10,color:'var(--dimmer)',fontFamily:'var(--mono)',lineHeight:1.6}}>※ 参考情報です。売買を推奨するものではありません。株価は約15分遅延。</p>
+        </div>
+      </>}
+    </div>
+  </>;
+}
+
+function App(){
+  const [stocks,setStocks]=useState([]),[meta,setMeta]=useState({}),[alerts,setAlerts]=useState([]);
+  const [cat,setCat]=useState('all'),[q,setQ]=useState(''),[sel,setSel]=useState(null);
+  const [conn,setConn]=useState('wait'),[now,setNow]=useState(Date.now()),[tab,setTab]=useState('list');
+  const lastUpd=useRef(null);
+  const load=useCallback(()=>{
+    Promise.all([
+      fetch(`${API}/api/stocks`).then(r=>r.json()),
+      fetch(`${API}/api/alerts`).then(r=>r.json()),
+      fetch(`${API}/api/meta`).then(r=>r.json()),
+    ]).then(([s,a,m])=>{setStocks(s.stocks||[]);setAlerts(a.alerts||[]);setMeta(m);
+      lastUpd.current=s.last_update||m.last_update||new Date().toISOString();setConn('ok');
+    }).catch(()=>setConn('ng'));
+  },[]);
+  useEffect(()=>{load();const p=setInterval(load,POLL_MS);return()=>clearInterval(p);},[load]);
+  useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t);},[]);
+  const elapsed=lastUpd.current?Math.floor((now-new Date(lastUpd.current).getTime())/1000):0;
+  let list=stocks.filter(s=>{
+    if(cat==='ipo'&&!s.ipo)return false;
+    if(cat!=='all'&&cat!=='ipo'&&s.sub!==cat)return false;
+    if(q){const x=q.toLowerCase();if(!s.code.toLowerCase().includes(x)&&!s.name.toLowerCase().includes(x))return false;}
+    return true;
+  });
+  list.sort((a,b)=>(b.volume||0)-(a.volume||0));
+  list.sort((a,b)=>(a.ipo?0:1)-(b.ipo?0:1));
+  return <>
+    <div className="head">
+      <div className="row1">
+        <span className="brand">SEMICON<b>·</b>SCOPE</span>
+        <span className={"conn "+(conn==='ok'?'ok':conn==='wait'?'wait':'ng')}>
+          {conn==='ok'?'● LIVE':conn==='wait'?'○ 接続中':'× 未接続'}</span>
+      </div>
+      <div className="row2">
+        <span>JST {new Date(now).toLocaleTimeString('ja-JP',{hour12:false})}</span>
+        <span>· 更新 {tstr(lastUpd.current)}</span>
+        <span className="delaybadge"><span className="pulse"></span>{meta.delay_label||'15分遅延'} | 経過 <span className="counter">{elapsed}</span>s</span>
+      </div>
+    </div>
+    <div className="scroll">
+      {conn==='ng'&&<div className="banner"><b>バックエンドに接続できません</b>
+        同一サーバーから配信されていないか、サーバー起動待ち（無料枠はスリープ復帰に最大1分）。
+        別ホストの場合は <span className="mono">?api=https://〜</span> を付けて開いてください。</div>}
+      {conn==='wait'&&!stocks.length&&<div className="banner"><b>データ取得中…</b>
+        無料枠はスリープからの復帰に時間がかかることがあります（最大1分ほど）。</div>}
+      {tab==='search'&&<div className="search"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="コード / 社名で検索" autoFocus/></div>}
+      {tab==='alerts'?
+        <div>
+          <div style={{fontFamily:'var(--mono)',fontSize:11,color:'var(--dim)',margin:'4px 0 12px',letterSpacing:1}}>⚡ ALERTS · 急騰/急落/出来高急増</div>
+          {alerts.length?alerts.map((a,i)=>
+            <div key={i} className={"card"} onClick={()=>setSel(a.code)}>
+              <div className="left"><div className="nm">{a.label}</div></div>
+              <div style={{color:'var(--dim)'}}>›</div>
+            </div>)
+          :<div className="empty">現在アラートはありません</div>}
+        </div>
+      :<>
+        <div className="chips">{CATS.map(c=>
+          <div key={c} className={"chip"+(cat===c?' on':'')} onClick={()=>setCat(c)}>{CAT_LBL[c]||c}</div>)}</div>
+        <div className="astrip">
+          {alerts.length?alerts.slice(0,8).map((a,i)=><span key={i} className={"alert "+a.type}>{a.label}</span>)
+           :<span className="alert none">アラートなし</span>}
+        </div>
+        {list.map(s=>{const cls=s.change_pct>=0?'up':'down',sign=s.change_pct>=0?'+':'';
+          return <div key={s.code} className="card" onClick={()=>setSel(s.code)}>
+            <div className="left">
+              <div className="nm"><span className="cd">{s.code}</span> {s.name}{s.ipo&&<span className="ipo">NEW IPO</span>}</div>
+              <div className="meta">{s.sub}{s.themes.map(t=><span key={t} className={"tag "+t}>{THEME_LBL[t]}</span>)}</div>
+            </div>
+            <MiniSpark pts={s.history} cls={cls}/>
+            <div className="right">
+              <div className={"px "+(s.price?'':'na')}>{s.price?fmt(s.price):'—'}</div>
+              <div className={"ch "+(s.change_pct==null?'na':cls)}>{s.change_pct!=null?`${sign}${s.change_pct}%`:'—'}</div>
+            </div>
+          </div>;})}
+        {!list.length&&<div className="empty">{conn==='ok'?'該当銘柄なし':'接続待ち…'}</div>}
+      </>}
+    </div>
+    <div className="disc"><b>本アプリは参考目的であり、投資判断・売買推奨を行うものではありません。</b>株価は約15分遅延 · yfinance/EDINET/RSS</div>
+    <div className="tabbar">
+      <div className={"tab"+(tab==='list'?' on':'')} onClick={()=>setTab('list')}><span className="ic">▦</span>一覧</div>
+      <div className={"tab"+(tab==='alerts'?' on':'')} onClick={()=>setTab('alerts')}><span className="ic">⚡</span>アラート</div>
+      <div className={"tab"+(tab==='search'?' on':'')} onClick={()=>{setTab('search');}}><span className="ic">⌕</span>検索</div>
+    </div>
+    <Sheet code={sel} onClose={()=>setSel(null)}/>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
